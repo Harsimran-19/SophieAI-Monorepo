@@ -1,0 +1,98 @@
+[project]
+name = "api"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10, <3.14"
+dependencies = [
+    "fastapi[standard]>=0.115.8",
+    "langchain-core>=0.3.34",
+    "langchain-groq>=0.2.4",
+    "langchain-mongodb>=0.4.0",
+    "langgraph>=0.2.70",
+    "langgraph-checkpoint-mongodb>=0.1.0",
+    "opik>=1.4.11",
+    "pre-commit>=4.1.0",
+    "pydantic-settings>=2.7.1",
+    "pymongo>=4.9.2",
+    "loguru>=0.7.3",
+    "langchain-huggingface>=0.1.2",
+    "langchain-community>=0.3.17",
+    "wikipedia>=1.4.0",
+    "ipykernel>=6.29.5",
+    "pydantic>=2.10.6",
+    "datasketch>=1.6.5",
+    "python-docx>=1.1.2",
+    "pdfminer-six>=20240706",
+    "plotly>=5.24.1",
+    "structlog>=25.1.0",
+    "python-multipart>=0.0.20",
+    "pymupdf4llm>=0.0.17",
+    "pypdf>=5.3.0",
+    "bs4>=0.0.2",
+    "validators>=0.34.0",
+    "email-validator>=2.2.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.4",
+    "ruff>=0.7.2",
+]
+
+[tool.pip]
+extra-index-url = "https://download.pytorch.org/whl/cpu/torch_stable.html"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.setuptools]
+package-dir = {"" = ""}
+
+[tool.setuptools.packages.find]
+include = [
+    "src", 
+    "src.career_coaches", 
+    "src.career_coaches.*", 
+    "src.common", 
+    "src.common.*", 
+    "src.material_generator", 
+    "src.material_generator.*", 
+    "src.philoagents", 
+    "src.philoagents.*", 
+    "src.resume_editor", 
+    "src.resume_editor.*", 
+    "career_coaches", 
+    "career_coaches.*", 
+    "common", 
+    "common.*", 
+    "material_generator", 
+    "material_generator.*", 
+    "resume_editor", 
+    "resume_editor.*"
+]
+
+[tool.hatch.build.targets.wheel]
+packages = [
+    "src", 
+    "src.career_coaches", 
+    "src.common", 
+    "src.material_generator", 
+    "src.philoagents", 
+    "src.resume_editor",
+    "career_coaches", 
+    "career_coaches.*", 
+    "common", 
+    "common.*", 
+    "material_generator", 
+    "material_generator.*", 
+    "philoagents", 
+    "philoagents.*", 
+    "resume_editor", 
+    "resume_editor.*"
+]
+
+[tool.ruff]
+target-version = "py312"
