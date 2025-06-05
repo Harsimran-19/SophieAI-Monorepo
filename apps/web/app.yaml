@@ -1,0 +1,8 @@
+# app.yaml
+runtime: nodejs20 # Use Node.js 20
+instance_class: F2 # Use a higher instance class if needed
+env_variables:
+  NODE_ENV: "development"
+  NEXT_PUBLIC_APP_URL: https://www.sophie-ai.com
+  NEXT_PUBLIC_SUPABASE_URL: https://nmyamvvgarafizpiobxb.supabase.co
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5teWFtdnZnYXJhZml6cGlvYnhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzUxOTg3NzksImV4cCI6MjA1MDc3NDc3OX0.zgUxyA2s9wtgxx_7yoRACFM5S0vofRmdejEFVGI2vqE
