@@ -14,7 +14,17 @@ async def conversation_node(state: CareerCoachState, config: RunnableConfig):
     """Main conversation node that generates career coach responses."""
     summary = state.get("summary", "")
     coach_id = state.get("coach_id", "career_assessment")
-    conversation_chain = get_career_coach_response_chain(coach_id)
+    use_web_tools = state.get("use_web_tools", False)
+    search_tool_name = state.get("search_tool_name", "all")
+    
+    # Get the appropriate chain based on whether web tools are enabled
+    if use_web_tools:
+        from .tools import configure_web_tools
+        # Configure the web tools with the specified search tool name
+        web_tools = configure_web_tools(search_tool_name)
+        conversation_chain = get_career_coach_response_chain(coach_id, use_web_tools=True)
+    else:
+        conversation_chain = get_career_coach_response_chain(coach_id, use_web_tools=False)
 
     response = await conversation_chain.ainvoke(
         {

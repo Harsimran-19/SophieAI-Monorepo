@@ -124,5 +124,31 @@ def get_available_web_tools() -> List[BaseTool]:
     return available_tools
 
 
+def configure_web_tools(search_tool_name: str = "all") -> List[BaseTool]:
+    """
+    Configure web tools based on the specified search tool name.
+    
+    Args:
+        search_tool_name: Which search tool to use (tavily, serper, ddg, or all)
+        
+    Returns:
+        List of configured search tools
+    """
+    if search_tool_name == "tavily":
+        tavily = get_tavily_search_tool()
+        return [tavily] if tavily else []
+        
+    elif search_tool_name == "serper":
+        serper = get_serper_search_tool()
+        return [serper] if serper else []
+        
+    elif search_tool_name == "ddg":
+        ddg = get_duckduckgo_search_tool()
+        return [ddg] if ddg else []
+    
+    else:  # "all" or any other value
+        return get_available_web_tools()
+
+
 # Export available tools
 tools = get_available_web_tools()

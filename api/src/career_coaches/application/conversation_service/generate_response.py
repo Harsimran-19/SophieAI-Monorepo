@@ -21,6 +21,8 @@ async def get_response(
     user_context: str = "",
     session_goals: list[str] = None,
     new_thread: bool = False,
+    use_web_tools: bool = False,
+    search_tool_name: str = "all",
 ) -> tuple[str, CareerCoachState]:
     """Run a career coaching conversation through the workflow graph.
 
@@ -80,6 +82,8 @@ async def get_response(
                     "coach_focus_areas": coach_focus_areas,
                     "user_context": user_context,
                     "session_goals": session_goals,
+                    "use_web_tools": use_web_tools,
+                    "search_tool_name": search_tool_name,
                 },
                 config=config,
             )
@@ -100,6 +104,8 @@ async def get_streaming_response(
     user_context: str = "",
     session_goals: list[str] = None,
     new_thread: bool = False,
+    use_web_tools: bool = False,
+    search_tool_name: str = "all",
 ) -> AsyncGenerator[str, None]:
     """Run a career coaching conversation with streaming response.
 
@@ -157,6 +163,8 @@ async def get_streaming_response(
                     "coach_focus_areas": coach_focus_areas,
                     "user_context": user_context,
                     "session_goals": session_goals,
+                    "use_web_tools": use_web_tools,
+                    "search_tool_name": search_tool_name,
                 },
                 config=config,
                 stream_mode="messages",

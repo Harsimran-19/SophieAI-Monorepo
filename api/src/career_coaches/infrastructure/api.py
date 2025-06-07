@@ -6,7 +6,6 @@ from opik.integrations.langchain import OpikTracer
 from pydantic import BaseModel
 
 from career_coaches.infrastructure.history_api import router as history_router
-from career_coaches.domain.web_coach import WebEnabledCareerCoach
 
 from career_coaches.application.conversation_service.generate_response import (
     get_response,
@@ -57,19 +56,12 @@ class ChatMessage(BaseModel):
     user_id: str
     user_context: str = ""
     session_goals: list[str] = []
+    web_tools: bool = False
+    search_tool_name: str = "all"  # Options: tavily, serper, ddg, all
 
 
 class ResetMemoryRequest(BaseModel):
     user_id: str = None  # Optional: if provided, reset only for this user
-
-
-class WebSearchChatMessage(BaseModel):
-    message: str
-    coach_id: str
-    user_id: str
-    search_tool: str = "all"  # 'tavily', 'serper', 'ddg', or 'all'
-    user_context: str = ""
-    session_goals: list[str] = []
 
 
 @app.post("/chat")
@@ -89,6 +81,8 @@ async def chat(chat_message: ChatMessage):
             coach_focus_areas=coach.focus_areas,
             user_context=chat_message.user_context,
             session_goals=chat_message.session_goals,
+            use_web_tools=chat_message.web_tools,
+            search_tool_name=chat_message.search_tool_name,
         )
         return {"response": response}
     except Exception as e:
@@ -131,6 +125,8 @@ async def websocket_chat(websocket: WebSocket):
                     coach_focus_areas=coach.focus_areas,
                     user_context=data.get("user_context", ""),
                     session_goals=data.get("session_goals", []),
+                    use_web_tools=data.get("web_tools", False),
+                    search_tool_name=data.get("search_tool_name", "all"),
                 )
 
                 # Send initial message to indicate streaming has started
@@ -194,132 +190,6 @@ async def get_available_coaches():
         return {"coaches": coaches_info}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.post("/web-search/chat")
-async def web_search_chat(chat_message: WebSearchChatMessage):
-    """Chat endpoint for web-enabled career coaching conversations."""
-    try:
-        coach_factory = CoachFactory()
-        coach = coach_factory.get_coach(chat_message.coach_id)
-
-        # Create web-enabled career coach
-        web_coach = WebEnabledCareerCoach(
-            coach_type=chat_message.coach_id,
-            search_tool_name=chat_message.search_tool
-        )
-        
-        # Get response using web search
-        response = web_coach.ask_with_web_search(chat_message.message)
-        return {"response": response}
-    except Exception as e:
-        opik_tracer = OpikTracer()
-        opik_tracer.flush()
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.websocket("/ws/web-search/chat")
-async def websocket_web_search_chat(websocket: WebSocket):
-    """WebSocket endpoint for streaming web-enabled career coaching conversations."""
-    await websocket.accept()
-
-    try:
-        while True:
-            data = await websocket.receive_json()
-
-            required_fields = ["message", "coach_id", "user_id"]
-            if not all(field in data for field in required_fields):
-                await websocket.send_json(
-                    {
-                        "error": f"Invalid message format. Required fields: {required_fields}"
-                    }
-                )
-                continue
-
-            try:
-                # Get coach for context
-                coach_factory = CoachFactory()
-                coach = coach_factory.get_coach(data["coach_id"])
-                
-                # Create web-enabled career coach
-                search_tool = data.get("search_tool", "all")
-                web_coach = WebEnabledCareerCoach(
-                    coach_type=data["coach_id"],
-                    search_tool_name=search_tool
-                )
-                
-                # Send initial message to indicate streaming has started
-                await websocket.send_json({"streaming": True})
-                
-                # Get web-search enabled response
-                # Note: This is not truly streaming the agent's intermediate steps,
-                # but we'll structure the response as if it were streaming
-                try:
-                    response = web_coach.ask_with_web_search(data["message"])
-                    
-                    # Stream the response in chunks to simulate streaming
-                    chunk_size = 20  # characters per chunk
-                    for i in range(0, len(response), chunk_size):
-                        chunk = response[i:i+chunk_size]
-                        await websocket.send_json({"chunk": chunk})
-                        
-                    # Indicate streaming has finished
-                    await websocket.send_json({
-                        "response": response,
-                        "streaming": False
-                    })
-                except Exception as e:
-                    await websocket.send_json({
-                        "error": f"Error in web search response: {str(e)}",
-                        "streaming": False
-                    })
-
-            except Exception as e:
-                opik_tracer = OpikTracer()
-                opik_tracer.flush()
-                await websocket.send_json({"error": str(e)})
-
-    except WebSocketDisconnect:
-        pass
-
-
-@app.get("/search-tools")
-async def get_available_search_tools():
-    """Get list of available search tools and their status."""
-    import os
-    
-    # Check available API keys
-    tavily_available = bool(os.getenv("TAVILY_API_KEY"))
-    serper_available = bool(os.getenv("SERPER_API_KEY") or os.getenv("SERPAPI_API_KEY"))
-    
-    return {
-        "tools": [
-            {
-                "id": "tavily",
-                "name": "Tavily Search",
-                "available": tavily_available,
-                "requires_api_key": True
-            },
-            {
-                "id": "serper",
-                "name": "Serper (Google Search)",
-                "available": serper_available,
-                "requires_api_key": True
-            },
-            {
-                "id": "ddg",
-                "name": "DuckDuckGo",
-                "available": True,
-                "requires_api_key": False
-            },
-            {
-                "id": "all",
-                "name": "All Available Tools",
-                "available": tavily_available or serper_available or True,
-                "requires_api_key": False
-            }
-        ]
-    }
 
 
 @app.get("/health")

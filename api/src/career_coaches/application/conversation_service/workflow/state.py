@@ -17,6 +17,8 @@ class CareerCoachState(MessagesState):
         summary (str): A summary of the conversation. This is used to reduce token usage.
         session_goals (list): Goals set for the current coaching session.
         user_context (str): Additional context about the user's career situation.
+        use_web_tools (bool): Whether to use web search tools for real-time information.
+        search_tool_name (str): The specific search tool to use (tavily, serper, ddg, all).
     """
 
     user_id: str
@@ -28,6 +30,8 @@ class CareerCoachState(MessagesState):
     summary: str
     session_goals: list
     user_context: str
+    use_web_tools: bool = False
+    search_tool_name: str = "all"
 
 
 def state_to_str(state: CareerCoachState) -> str:
@@ -48,6 +52,8 @@ CareerCoachState(
     coach_approach={state["coach_approach"]},
     coach_focus_areas={state["coach_focus_areas"]},
     session_goals={state.get("session_goals", [])},
+    use_web_tools={state.get("use_web_tools", False)},
+    search_tool_name={state.get("search_tool_name", "all")},
     conversation={conversation}
 )
     """
