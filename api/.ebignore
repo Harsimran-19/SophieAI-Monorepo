@@ -1,0 +1,26 @@
+# Exclude virtual environments and cache directories
+.venv/
+__pycache__/
+*.py[cod]
+
+# Exclude large data and model files
+/data/
+/img/
+/notebooks/
+
+# Exclude development & editor files
+.vscode/
+.idea/
+*.log
+
+# Git & CI files
+.git/
+.github/
+
+# Exclude Docker/Compose artifacts not needed by Beanstalk
+Dockerfile*
+docker-compose.*
+
+# Tests and documentation (optional)
+tests/
+.docs/

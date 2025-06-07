@@ -3,9 +3,7 @@
 import os
 from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from common.config.base_settings import BaseAgentSettings
 
-settings = BaseAgentSettings()
 
 class ApplicationConfig(BaseSettings):
     """Configuration for the resume editor application."""
@@ -13,7 +11,7 @@ class ApplicationConfig(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="RESUME_AGENT_")
     
     # LLM configuration
-    groq_api_key: str = settings.groq_api_key
+    groq_api_key: str = "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"
     model_name: str = "llama-3.3-70b-versatile"
     temperature: float = 0.3
     

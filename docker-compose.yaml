@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://api:8000
+    depends_on:
+      - api
+    # Development volumes removed to use the built app
+    # For development, uncomment these volume mounts
+    # volumes:
+    #  - ./frontend:/app
+    #  - /app/node_modules
+    #  - /app/.next
+    networks:
+      - sophie-network
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app:/app/src
+    volumes:
+      - ./api:/app
+      - /app/__pycache__
+    networks:
+      - sophie-network
+    restart: unless-stopped
+
+networks:
+  sophie-network:
+    driver: bridge

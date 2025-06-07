@@ -1,6 +1,6 @@
 # Career Coach Agents
 
-A sophisticated career coaching system built on the DDD Architecture, featuring specialized AI coaches with multi-user support, long-term memory, and comprehensive evaluation capabilities.
+A sophisticated career coaching system built on the same architecture as PhiloAgents, featuring specialized AI coaches with multi-user support, long-term memory, and comprehensive evaluation capabilities.
 
 ## 🎯 Overview
 

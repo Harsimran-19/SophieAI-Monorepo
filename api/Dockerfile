@@ -9,10 +9,10 @@ COPY src/ src/
 COPY tools/ tools/
 
 # Install uv for faster package installation
-# RUN pip install uv
+RUN pip install uv
 
 # Install dependencies without installing the package itself
-RUN pip install -e .
+RUN uv pip install --system -e .
 
 # Set the Python path to include src directory directly
 ENV PYTHONPATH="/app:/app/src"

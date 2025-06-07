@@ -1,5 +1,6 @@
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_groq import ChatGroq
+from langchain.agents import AgentExecutor, create_openai_tools_agent
 
 from career_coaches.config import settings
 from career_coaches.domain.prompts import (
@@ -13,6 +14,9 @@ from common.domain.prompts import (
     EXTEND_SUMMARY_PROMPT,
     SUMMARY_PROMPT,
 )
+
+# Import the web search tools
+from career_coaches.application.conversation_service.workflow.tools import tools as web_tools
 
 
 def get_chat_model(temperature: float = 0.7, model_name: str = settings.GROQ_LLM_MODEL) -> ChatGroq:
@@ -36,21 +40,63 @@ def get_prompt_by_coach_id(coach_id: str):
     return prompt_mapping.get(coach_id.lower(), CAREER_ASSESSMENT_PROMPT)
 
 
-def get_career_coach_response_chain(coach_id: str = "career_assessment"):
-    """Create a chain for generating career coach responses."""
+def get_career_coach_response_chain(coach_id: str = "career_assessment", use_web_tools: bool = False):
+    """Create a chain for generating career coach responses.
+    
+    Args:
+        coach_id: The type of coach to use
+        use_web_tools: Whether to enable web search capabilities
+        
+    Returns:
+        A chain that can be invoked with messages to get responses
+    """
     model = get_chat_model()
-    # Note: No tools binding initially since we're not using RAG
     system_message = get_prompt_by_coach_id(coach_id)
-
-    prompt = ChatPromptTemplate.from_messages(
-        [
-            ("system", system_message.prompt),
-            MessagesPlaceholder(variable_name="messages"),
-        ],
-        template_format="jinja2",
-    )
-
-    return prompt | model
+    
+    if use_web_tools and web_tools:
+        # Add web search instructions to the prompt
+        web_tools_instruction = """
+        
+        You now have access to real-time web search tools. Use them when you need current information about:
+        - Job market trends and statistics
+        - Industry-specific developments
+        - Company information
+        - Current in-demand skills
+        - Recent changes in career fields
+        
+        When using search tools, form concise, specific queries to get the most relevant results.
+        After getting search results, integrate that information naturally into your response.
+        Always attribute information from web searches by mentioning "According to recent information..." 
+        or similar phrases.
+        
+        Only use web search when truly necessary - for general career advice or timeless information,
+        rely on your existing knowledge.
+        """
+        system_prompt = system_message.prompt + web_tools_instruction
+        
+        # Create an agent with web search tools
+        prompt = ChatPromptTemplate.from_messages(
+            [
+                ("system", system_prompt),
+                MessagesPlaceholder(variable_name="messages"),
+            ],
+            template_format="jinja2",
+        )
+        
+        # Create the agent with search tools
+        agent = create_openai_tools_agent(model, web_tools, prompt)
+        return AgentExecutor(agent=agent, tools=web_tools, handle_parsing_errors=True)
+    else:
+        # Regular career coach without web tools
+        prompt = ChatPromptTemplate.from_messages(
+            [
+                ("system", system_message.prompt),
+                MessagesPlaceholder(variable_name="messages"),
+            ],
+            template_format="jinja2",
+        )
+        
+        return prompt | model
 
 
 def get_conversation_summary_chain(summary: str = ""):
@@ -81,3 +127,17 @@ def get_context_summary_chain():
     )
 
     return prompt | model
+
+
+def get_web_enabled_career_coach_chain(coach_id: str = "career_assessment"):
+    """Create a chain for a career coach with web search capabilities.
+    
+    This is a convenience function that always enables web tools.
+    
+    Args:
+        coach_id: The type of coach to use
+        
+    Returns:
+        A chain with web search capabilities
+    """
+    return get_career_coach_response_chain(coach_id=coach_id, use_web_tools=True)

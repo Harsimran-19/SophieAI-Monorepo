@@ -1,4 +1,4 @@
-# SophieAI API
+# PhiloAgents API
 
 Check the [INSTALL_AND_USAGE.md](../INSTALL_AND_USAGE.md) file for instructions on how to install and use the API.
 
